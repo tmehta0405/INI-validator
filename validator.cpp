@@ -89,6 +89,74 @@ bool isKeyValue(const std::string& line, std::string& key, std::string& value, s
     return true;
 }
 
+bool validateRequiredFields(const Config& config, std::vector<std::string>& errors) {
+    bool valid{true};
+
+    std::vector<std::string> requiredSections{"database", "server"};
+    for (const auto& section : requiredSections) {
+        if (config.sections.find(section) == config.sections.end()) {
+            errors.push_back("Missing required section: [" + section + "]");
+            valid = false;
+        }
+    }
+
+    if (config.sections.find("database") != config.sections.end()) {
+        std::vector<std::string> requiredDbKeys{"host", "port"};
+        const auto& dbSection{config.sections.at("database")};
+
+        for (const auto& key : requiredDbKeys) {
+            if (dbSection.find(key) == dbSection.end()) {
+                errors.push_back("Missing required key '" + key + "' in [database]");
+                valid = false;
+            }
+        }
+
+        if (dbSection.find("port") != dbSection.end()) {
+            const std::string& portStr{dbSection.at("port")};
+            bool isNumber{true};
+            for (char c : portStr) {
+                if (!std::isdigit(c)) {
+                    isNumber = false;
+                    break;
+                }
+            }
+            if (!isNumber) {
+                errors.push_back("Invalid port value in [database]: '" + portStr + "' must be a number");
+                valid = false;
+            }
+        }
+    }
+
+    if (config.sections.find("server") != config.sections.end()) {
+        std::vector<std::string> requiredServerKeys{"port"};
+        const auto& serverSection{config.sections.at("server")};
+
+        for (const auto& key : requiredServerKeys) {
+            if (serverSection.find(key) == serverSection.end()) {
+                errors.push_back("Missing required key '" + key + "' in [server]");
+                valid = false;
+            }
+        }
+
+        if (serverSection.find("port") != serverSection.end()) {
+            const std::string& portStr{serverSection.at("port")};
+            bool isNumber{true};
+            for (char c : portStr) {
+                if (!std::isdigit(c)) {
+                    isNumber = false;
+                    break;
+                }
+            }
+            if (!isNumber) {
+                errors.push_back("Invalid port value in [server]: '" + portStr + "' must be a number");
+                valid = false;
+            }
+        }
+    }
+
+    return valid;
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cout << "Usage: " << argv[0] << " <config-file>\n";
@@ -164,12 +232,25 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    std::cout << "\n" << (hasErrors ? "Validation Failed" : "Validation Passed") << "\n";
+    std::cout << "\nChecking required fields...\n";
+    std::vector<std::string> validationErrors{};
+    if (!validateRequiredFields(config, validationErrors)) {
+        for (const auto& err : validationErrors) {
+            std::cout << err << "\n";
+        }
+        hasErrors = true;
+        errorCount += validationErrors.size();
+    } else {
+        std::cout << "All required fields present\n";
+    }
+
+    std::cout << "\nSummary:\n";
+    std::cout << (hasErrors ? "Validation Failed" : "Validation Passed") << "\n";
     std::cout << "Total lines: " << lineNum << "\n";
     std::cout << "Sections found: " << config.sections.size() << "\n";
 
     if (!hasErrors) {
-        std::cout << "\nParsed Configuration:\n";
+        std::cout << "\n--- Parsed Configuration ---\n";
         for (const auto& [section, keys] : config.sections) {
             std::cout << "[" << section << "]\n";
             for (const auto& [key, val] : keys) {
