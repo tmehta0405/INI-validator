@@ -50,13 +50,42 @@ bool isSection(const std::string& line, std::string& sectionName, std::string& e
     return true;
 }
 
-bool isKeyValue(const std::string& line) {
-    return line.find('=') != std::string::npos;
+bool isKeyValue(const std::string& line, std::string& key, std::string& value, std::string& error) {
+    size_t equalPos{line.find('=')};
+
+    if (equalPos == std::string::npos) return false;
+
+    key = trim(line.substr(0, equalPos));
+    value = trim(line.substr(equalPos + 1));
+
+    if (key.empty()) {
+        error = "Key cannot be empty before '='";
+        return true;
+    }
+
+    if (key.find(' ') != std::string::npos) {
+        error = "Key '" + key + "' contains spaces. Keys cannot have spaces";
+        return true;
+    }
+
+    for (char c : key) {
+        if (!std::isalnum(c) && c != '_' && c != '-') {
+            error = "Key '" + key + "' contains invalid character '" + std::string(1, c) + "'";
+            return true;
+        }
+    }
+
+    if (value.empty()) {
+        error = "Value cannot be empty for key '" + key + "'";
+        return true;
+    }
+
+    return true;
 }
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <config-file>\n";
+        std::cout << "Usage: " << argv[0] << " <config-file>\n";
         return EXIT_FAILURE;
     }
 
@@ -64,7 +93,7 @@ int main(int argc, char* argv[]) {
     std::ifstream file{filename};
 
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open file '" << filename << "'\n";
+        std::cout << "Error: Could not open file '" << filename << "'\n";
         return EXIT_FAILURE;
     }
 
@@ -79,22 +108,30 @@ int main(int argc, char* argv[]) {
         ++lineNum;
 
         std::string sectionName{};
+        std::string key{};
+        std::string value{};
         std::string error{};
 
         if (isBlankLine(line) || isComment(line)) {
             continue;
         } else if (isSection(line, sectionName, error)) {
             if (!error.empty()) {
-                std::cerr << "Line " << lineNum << ": " << error << "\n";
+                std::cout << "Line " << lineNum << ": " << error << "\n";
                 ++errorCount;
                 hasErrors = true;
             } else {
                 std::cout << "Line " << lineNum << ": Valid section [" << sectionName << "]\n";
             }
-        } else if (isKeyValue(line)) {
-            std::cout << "Line " << lineNum << ": Valid key-value pair\n";
+        } else if (isKeyValue(line, key, value, error)) {
+            if (!error.empty()) {
+                std::cout << "Line " << lineNum << ": " << error << "\n";
+                ++errorCount;
+                hasErrors = true;
+            } else {
+                std::cout << "Line " << lineNum << ": Valid key-value: " << key << " = " << value << "\n";
+            }
         } else {
-            std::cerr << "Line " << lineNum << ": Invalid syntax: " << line << '\n';
+            std::cout << "Line " << lineNum << ": Invalid syntax: " << line << '\n';
             ++errorCount;
             hasErrors = true;
         }
