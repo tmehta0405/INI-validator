@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Sections found: " << config.sections.size() << "\n";
 
     if (!hasErrors) {
-        std::cout << "\n--- Parsed Configuration ---\n";
+        std::cout << "\nParsed Configuration: \n";
         for (const auto& [section, keys] : config.sections) {
             std::cout << "[" << section << "]\n";
             for (const auto& [key, val] : keys) {
