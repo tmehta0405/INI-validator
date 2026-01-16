@@ -3,6 +3,12 @@
 #include <fstream>
 #include <string>
 #include <cstdlib>
+#include <map>
+#include <vector>
+
+struct Config {
+    std::map<std::string, std::map<std::string, std::string>> sections;
+};
 
 std::string trim(const std::string& str) {
     size_t start{str.find_first_not_of(" \t\r\n")};
@@ -97,7 +103,9 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
+    Config config{};
     std::string line{};
+    std::string currentSection{};
     int lineNum{0};
     int errorCount{0};
     bool hasErrors{false};
@@ -120,6 +128,14 @@ int main(int argc, char* argv[]) {
                 ++errorCount;
                 hasErrors = true;
             } else {
+                currentSection = sectionName;
+
+                if (config.sections.find(sectionName) != config.sections.end()) {
+                    std::cout << "Line " << lineNum << ": Warning - Section [" << sectionName << "] already exists (will merge)\n";
+                } else {
+                    config.sections[sectionName] = {};
+                }
+
                 std::cout << "Line " << lineNum << ": Valid section [" << sectionName << "]\n";
             }
         } else if (isKeyValue(line, key, value, error)) {
@@ -128,7 +144,18 @@ int main(int argc, char* argv[]) {
                 ++errorCount;
                 hasErrors = true;
             } else {
-                std::cout << "Line " << lineNum << ": Valid key-value: " << key << " = " << value << "\n";
+                if (currentSection.empty()) {
+                    std::cout << "Line " << lineNum << ": Key-value pair '" << key << "=" << value << "' found outside of any section\n";
+                    ++errorCount;
+                    hasErrors = true;
+                } else {
+                    if (config.sections[currentSection].find(key) != config.sections[currentSection].end()) {
+                        std::cout << "Line " << lineNum << ": Warning - Key '" << key << "' already exists in [" << currentSection << "] (will overwrite)\n";
+                    }
+
+                    config.sections[currentSection][key] = value;
+                    std::cout << "Line " << lineNum << ": Valid key-value: " << key << " = " << value << "\n";
+                }
             }
         } else {
             std::cout << "Line " << lineNum << ": Invalid syntax: " << line << '\n';
@@ -139,6 +166,18 @@ int main(int argc, char* argv[]) {
 
     std::cout << "\n" << (hasErrors ? "Validation Failed" : "Validation Passed") << "\n";
     std::cout << "Total lines: " << lineNum << "\n";
+    std::cout << "Sections found: " << config.sections.size() << "\n";
+
+    if (!hasErrors) {
+        std::cout << "\nParsed Configuration:\n";
+        for (const auto& [section, keys] : config.sections) {
+            std::cout << "[" << section << "]\n";
+            for (const auto& [key, val] : keys) {
+                std::cout << "  " << key << " = " << val << "\n";
+            }
+        }
+    }
+
     if (errorCount > 0) {
         std::cout << "Errors found: " << errorCount << "\n";
         return EXIT_FAILURE;
