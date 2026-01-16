@@ -1,0 +1,15 @@
+Package: ini-validator
+Version: 1.0.0
+Architecture: amd64
+Maintainer: Your Name <your.email@example.com>
+Filename: ../../../../pool/main/ini-validator_1.0.0_amd64.deb
+Size: 17052
+MD5sum: cf1f3ce613a2545afe6262f27e31f058
+SHA1: e5d0fd9d11704541ccbd90cd9a7cd988b79ddb1a
+SHA256: 7ce44c9fb73a7e94cd0bae6fc98c364af7090f464c2fafb40d91714fb200dea7
+Section: utils
+Priority: optional
+Description: INI configuration file validator
+ A command-line tool to validate INI configuration files.
+ Checks syntax, required fields, and data types.
+

@@ -1,0 +1,17 @@
+Origin: TirthMehta
+Label: INI Validator Repository
+Suite: stable
+Codename: stable
+Version: 1.0
+Architectures: amd64
+Components: main
+Description: Repository for ini-validator package
+MD5Sum:
+ 3758abe305113f2c454d6c2fa46b1f14              528 main/binary-amd64/Packages
+ b51603285c0f6219c6001f8d0c3b1cdd              381 main/binary-amd64/Packages.gz
+SHA1:
+ d66d08aca2e1b937035bf650ad100e3358d2450e              528 main/binary-amd64/Packages
+ ee5de8dfc9b708417495d16f509789986254a9bf              381 main/binary-amd64/Packages.gz
+SHA256:
+ 4db73125a6e54108d956fcf4df6c05dabecf3c9dfcc3156017087ad95a660d96              528 main/binary-amd64/Packages
+ 050a7b067ea0fb44f80d3b13c0e545139a47bd852a8f984eba9ab0990fd2a235              381 main/binary-amd64/Packages.gz

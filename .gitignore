@@ -1,1 +1,7 @@
 /.idea
+ini-validator
+ini-validator_*.deb
+packaging/usr/local/bin/ini-validator
+*.o
+cmake-build-*/
+build/

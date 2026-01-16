@@ -1,0 +1,9 @@
+Package: ini-validator
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Your Name <your.email@example.com>
+Description: INI configuration file validator
+ A command-line tool to validate INI configuration files.
+ Checks syntax, required fields, and data types.
